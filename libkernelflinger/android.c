@@ -1612,6 +1612,17 @@ static EFI_STATUS setup_command_line(
 		goto out;
 	/* append stages boottime */
 	set_boottime_stamp(TM_JMP_KERNEL);
+	{
+		CHAR8 stages_ascii[256] = {0};
+		construct_stages_boottime(stages_ascii, sizeof(stages_ascii));
+		if (stages_ascii[0] != '\0') {
+			CHAR16 *stages_w = stra_to_str(stages_ascii);
+			if (stages_w) {
+				log(L"Boot stages(ms) pre-jump: %s", stages_w);
+				FreePool(stages_w);
+			}
+		}
+	}
 #ifdef USE_SBL
 	tsc_mhz = get_tsc_mhz();
 	if (tsc_mhz == 0)

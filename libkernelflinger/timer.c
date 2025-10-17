@@ -43,6 +43,7 @@
 #define BOOT_STAGE_LAUNCH_TRUSTY "LTS"
 #define BOOT_STAGE_POST_TRUSTY "PTS"
 #define BOOT_STAGE_START_KERNEL "SKS"
+#define BOOT_STAGE_TOTAL_FLINGER "TFS"
 
 //Array for recording boot time of every stage
 static unsigned bt_stamp[TM_POINT_LAST];
@@ -151,8 +152,10 @@ void construct_stages_boottime(CHAR8 *time_str, size_t buf_len)
 	strlcat(time_str, (CHAR8 *)BOOT_STAGE_FIRMWARE, buf_len);
 	strlcat(time_str, (CHAR8 *)":", buf_len);
 
-	if (efi_enter_point == 0)
+	if (efi_enter_point == 0) {
 		itoa(bt_stamp[TM_EFI_MAIN], interval_str, 10);
+		efi_enter_point = bt_stamp[TM_EFI_MAIN];
+	}
 	else
 		itoa(efi_enter_point, interval_str, 10);
 
@@ -196,6 +199,11 @@ void construct_stages_boottime(CHAR8 *time_str, size_t buf_len)
 #else
 	itoa(bt_stamp[TM_JMP_KERNEL] - bt_stamp[TM_VERIFY_BOOT_DONE], interval_str, 10);
 #endif
+	strlcat(time_str, interval_str, buf_len);
+	strlcat(time_str, (CHAR8 *)",", buf_len);
 
+	strlcat(time_str, (CHAR8 *)BOOT_STAGE_TOTAL_FLINGER, buf_len);
+	strlcat(time_str, (CHAR8 *)":", buf_len);
+	itoa(bt_stamp[TM_JMP_KERNEL] - bt_stamp[TM_EFI_MAIN], interval_str, 10);
 	strlcat(time_str, interval_str, buf_len);
 }
