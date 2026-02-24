@@ -32,6 +32,7 @@
  */
 #include <efi.h>
 #include <efiapi.h>
+#include "timer.h"
 
 #include "vars.h"
 #include "ui.h"
@@ -837,7 +838,11 @@ char *get_serial_number(void)
 {
 	EFI_STATUS ret;
 	static char bios_serialno[SERIALNO_MAX_SIZE + 1];
+#ifndef DEBUG_GENERATE_RANDOM_SERIAL_NUM
 	static char serialno[SERIALNO_MAX_SIZE + 1];
+#else
+	char *serialno = generate_random_serial_number();
+#endif
 	char *pos;
 	unsigned int zeroes = 0;
 	UINTN len;
@@ -1061,3 +1066,48 @@ EFI_STATUS get_efi_loaded_slot_failed(UINT8 slot, EFI_STATUS *error)
 	FreePool(data);
 	return EFI_SUCCESS;
 }
+
+#ifdef DEBUG_GENERATE_RANDOM_SERIAL_NUM
+/**
+ * Generate a random serial number using hardware RNG
+ *
+ * @return Pointer to static buffer containing random serial number
+ *         Format: 20 hexadecimal characters (e.g., "a3f5c8d9e1b2047f6c81")
+ */
+char *generate_random_serial_number(void)
+{
+	static char random_serial[SERIALNO_MAX_SIZE + 1];
+	CHAR8 random_bytes[SERIALNO_MAX_SIZE / 2]; // 10 bytes -> 20 hex chars
+	EFI_STATUS ret;
+	UINTN i;
+	debug(L"BNK: Generated random serial: entry");
+
+	// Check if already generated
+	if (random_serial[0] != '\0')
+		return random_serial;
+
+	// Generate random bytes using RDRAND
+	debug(L"BNK: Generated random serial:using RDRAND");
+	ret = generate_random_numbers(random_bytes, sizeof(random_bytes));
+	if (EFI_ERROR(ret)) {
+		error(L"Failed to generate random serial: CPU doesn't support RDRAND");
+
+		// Fallback: Use timestamp-based pseudo-random
+		UINT64 timestamp = rdtsc();
+		efi_snprintf((CHAR8*)random_serial, sizeof(random_serial),
+		             (CHAR8*)"TS%018llx", timestamp);
+	        debug(L"BNK: Generated random serial: %a", random_serial);
+		return random_serial;
+	}
+
+	// Convert random bytes to hexadecimal string
+	for (i = 0; i < sizeof(random_bytes); i++) {
+		efi_snprintf((CHAR8*)&random_serial[i * 2], 3,
+		             (CHAR8*)"%02x", (unsigned char)random_bytes[i]);
+	}
+	random_serial[SERIALNO_MAX_SIZE] = '\0';
+
+	debug(L"BNK: Generated random serial: %a", random_serial);
+	return random_serial;
+}
+#endif /* DEBUG_GENERATE_RANDOM_SERIAL_NUM */

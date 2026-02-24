@@ -96,6 +96,11 @@ ifeq ($(MULTI_USER_SUPPORT),true)
     LOCAL_CFLAGS += -DMULTI_USER
 endif
 
+ifeq ($(DEBUG_GENERATE_RANDOM_SERIAL_NUM), true)
+    LOCAL_CFLAGS += -DDEBUG_GENERATE_RANDOM_SERIAL_NUM
+endif
+
+
 LOCAL_SRC_FILES := \
 	android.c \
 	efilinux.c \

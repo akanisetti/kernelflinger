@@ -180,4 +180,8 @@ EFI_STATUS get_efi_loaded_slot(UINT8 *slot);
 EFI_STATUS set_efi_loaded_slot_failed(UINT8 slot, EFI_STATUS error);
 EFI_STATUS get_efi_loaded_slot_failed(UINT8 slot, EFI_STATUS *error);
 
+#ifdef DEBUG_GENERATE_RANDOM_SERIAL_NUM
+char *generate_random_serial_number(void);
+#endif /* DEBUG_GENERATE_RANDOM_SERIAL_NUM */
+
 #endif /* _VARS_H_ */
