@@ -509,12 +509,18 @@ exit:
 
 const char *get_current_state_string()
 {
-	return STATE_DISPLAY[get_current_state() + 1].string;
+	int idx = (int)get_current_state() + 1;
+	if (idx < 0 || idx >= (int)(sizeof(STATE_DISPLAY)/sizeof(STATE_DISPLAY[0])))
+		idx = 0;
+	return STATE_DISPLAY[idx].string;
 }
 
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL *get_current_state_color()
 {
-	return STATE_DISPLAY[get_current_state() + 1].color;
+	int idx = (int)get_current_state() + 1;
+	if (idx < 0 || idx >= (int)(sizeof(STATE_DISPLAY)/sizeof(STATE_DISPLAY[0])))
+		idx = 0;
+	return STATE_DISPLAY[idx].color;
 }
 
 BOOLEAN device_is_unlocked()
