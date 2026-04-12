@@ -1884,8 +1884,13 @@ static EFI_STATUS handover_kernel(CHAR8 *bootimage, EFI_HANDLE parent_image)
         /* See Linux Documentation/x86/boot.txt */
         setup_header_end = *((CHAR8 *)buf+0x201) + 0x202;
         setup_header_size = setup_header_end - offsetof(struct boot_params, hdr);
-        ret = memcpy_s(&boot_params->hdr, sizeof(boot_params->hdr) + sizeof(boot_params->_pad7),
-                (CHAR8 *)(&buf->hdr), setup_header_size);
+                {
+                        UINTN max_hdr_size = sizeof(boot_params->hdr) + sizeof(boot_params->_pad7);
+                        if (setup_header_size > max_hdr_size)
+                                setup_header_size = max_hdr_size;
+                        ret = memcpy_s(&boot_params->hdr, max_hdr_size,
+                                        (CHAR8 *)(&buf->hdr), setup_header_size);
+                }
         if (EFI_ERROR(ret))
                 goto out;
         boot_params->hdr.code32_start = (UINT32)((UINT64)kernel_start);
