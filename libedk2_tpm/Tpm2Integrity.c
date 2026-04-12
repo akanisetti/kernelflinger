@@ -742,7 +742,7 @@ Tpm2PolicyPCR (
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - PcrDigest buffer overflow\n"));
     return EFI_INVALID_PARAMETER;
   }
-  if (Buffer + sizeof(UINT16) + PcrDigest->size > SendBufferEnd) {
+  if ((UINTN)(SendBufferEnd - Buffer) < (sizeof(UINT16) + PcrDigest->size)) {
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - PcrDigest write out of bounds\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -755,14 +755,14 @@ Tpm2PolicyPCR (
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - pcrSelections buffer overflow\n"));
     return EFI_INVALID_PARAMETER;
   }
-  if (Buffer + sizeof(UINT32) > SendBufferEnd) {
+  if ((UINTN)(SendBufferEnd - Buffer) < sizeof(UINT32)) {
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - pcrSelections count out of bounds\n"));
     return EFI_INVALID_PARAMETER;
   }
   WriteUnaligned32 ((UINT32 *)Buffer, SwapBytes32(Pcrs->count));
   Buffer += sizeof(UINT32);
   for (Index = 0; Index < Pcrs->count; Index++) {
-    if (Buffer + sizeof(UINT16) + sizeof(UINT8) > SendBufferEnd) {
+    if ((UINTN)(SendBufferEnd - Buffer) < (sizeof(UINT16) + sizeof(UINT8))) {
       DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - pcrSelections header out of bounds\n"));
       return EFI_INVALID_PARAMETER;
     }
@@ -774,7 +774,7 @@ Tpm2PolicyPCR (
       DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - pcrSelect buffer overflow\n"));
       return EFI_INVALID_PARAMETER;
     }
-    if (Buffer + Pcrs->pcrSelections[Index].sizeofSelect > SendBufferEnd) {
+    if ((UINTN)(SendBufferEnd - Buffer) < Pcrs->pcrSelections[Index].sizeofSelect) {
       DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - pcrSelect write out of bounds\n"));
       return EFI_INVALID_PARAMETER;
     }
