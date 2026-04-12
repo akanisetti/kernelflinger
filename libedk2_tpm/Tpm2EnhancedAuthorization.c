@@ -178,7 +178,7 @@ Tpm2PolicySecret (
   //
   Buffer = (UINT8 *)&RecvBuffer.Timeout;
   UINT8 *BufferEnd = (UINT8 *)&RecvBuffer + RecvBufferSize;
-  if (Buffer + sizeof(UINT16) > BufferEnd) {
+  if ((UINTN)(BufferEnd - Buffer) < sizeof(UINT16)) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - Timeout size field out of bounds\n"));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -191,7 +191,7 @@ Tpm2PolicySecret (
   }
 
   Buffer += sizeof(UINT16);
-  if (Buffer + Timeout->size > BufferEnd) {
+  if ((UINTN)(BufferEnd - Buffer) < Timeout->size) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - Timeout buffer out of bounds\n"));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -199,21 +199,21 @@ Tpm2PolicySecret (
   CopyMem (Timeout->buffer, Buffer, Timeout->size);
   Buffer += Timeout->size;
 
-  if (Buffer + sizeof(UINT16) > BufferEnd) {
+  if ((UINTN)(BufferEnd - Buffer) < sizeof(UINT16)) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - PolicyTicket tag out of bounds\n"));
     Status = EFI_DEVICE_ERROR;
     goto Done;
   }
   PolicyTicket->tag = SwapBytes16(ReadUnaligned16 ((UINT16 *)Buffer));
   Buffer += sizeof(UINT16);
-  if (Buffer + sizeof(UINT32) > BufferEnd) {
+  if ((UINTN)(BufferEnd - Buffer) < sizeof(UINT32)) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - PolicyTicket hierarchy out of bounds\n"));
     Status = EFI_DEVICE_ERROR;
     goto Done;
   }
   PolicyTicket->hierarchy = SwapBytes32(ReadUnaligned32 ((UINT32 *)Buffer));
   Buffer += sizeof(UINT32);
-  if (Buffer + sizeof(UINT16) > BufferEnd) {
+  if ((UINTN)(BufferEnd - Buffer) < sizeof(UINT16)) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - PolicyTicket digest size out of bounds\n"));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -226,7 +226,7 @@ Tpm2PolicySecret (
     goto Done;
   }
 
-  if (Buffer + PolicyTicket->digest.size > BufferEnd) {
+  if ((UINTN)(BufferEnd - Buffer) < PolicyTicket->digest.size) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - digest buffer out of bounds\n"));
     Status = EFI_DEVICE_ERROR;
     goto Done;
