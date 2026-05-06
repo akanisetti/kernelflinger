@@ -39,7 +39,7 @@
 #include "adb.h"
 #endif
 
-#define FIRST_TIMEOUT_SECS	5
+#define FIRST_TIMEOUT_SECS	1
 #define SECOND_TIMEOUT_SECS	30
 
 #define PRESS_TO_PAUSE_FMT		"Press %a to pause %a"
