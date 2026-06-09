@@ -1882,8 +1882,22 @@ static EFI_STATUS handover_kernel(CHAR8 *bootimage, EFI_HANDLE parent_image)
                 goto out;
 
         /* See Linux Documentation/x86/boot.txt */
+        if (setup_size <= 0x201 ||
+            setup_size <= offsetof(struct boot_params, hdr)) {
+                ret = EFI_INVALID_PARAMETER;
+                goto out;
+        }
         setup_header_end = *((CHAR8 *)buf+0x201) + 0x202;
+        if (setup_header_end > setup_size ||
+            setup_header_end < offsetof(struct boot_params, hdr)) {
+                ret = EFI_INVALID_PARAMETER;
+                goto out;
+        }
         setup_header_size = setup_header_end - offsetof(struct boot_params, hdr);
+        if (setup_header_size > sizeof(boot_params->hdr) + sizeof(boot_params->_pad7)) {
+                ret = EFI_INVALID_PARAMETER;
+                goto out;
+        }
         ret = memcpy_s(&boot_params->hdr, sizeof(boot_params->hdr) + sizeof(boot_params->_pad7),
                 (CHAR8 *)(&buf->hdr), setup_header_size);
         if (EFI_ERROR(ret))
