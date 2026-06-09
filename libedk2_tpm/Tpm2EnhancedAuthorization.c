@@ -109,6 +109,7 @@ Tpm2PolicySecret (
   UINT32                            SendBufferSize;
   UINT32                            RecvBufferSize;
   UINT8                             *Buffer;
+  UINT8                             *RecvBufferEnd;
   UINT32                            SessionInfoSize;
 
   //
@@ -177,6 +178,12 @@ Tpm2PolicySecret (
   // Return the response
   //
   Buffer = (UINT8 *)&RecvBuffer.Timeout;
+  RecvBufferEnd = (UINT8 *)&RecvBuffer + RecvBufferSize;
+  if ((UINTN)Buffer + sizeof(UINT16) > (UINTN)RecvBufferEnd) {
+    DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - malformed timeout size field\n"));
+    Status = EFI_DEVICE_ERROR;
+    goto Done;
+  }
   Timeout->size = SwapBytes16(ReadUnaligned16 ((UINT16 *)Buffer));
   if (Timeout->size > sizeof(UINT64)) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - Timeout->size error %x\n", Timeout->size));
@@ -185,7 +192,13 @@ Tpm2PolicySecret (
   }
 
   Buffer += sizeof(UINT16);
+  if ((UINTN)Buffer + Timeout->size + sizeof(UINT16) + sizeof(UINT32) + sizeof(UINT16) > (UINTN)RecvBufferEnd) {
+    DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - malformed response buffer\n"));
+    Status = EFI_DEVICE_ERROR;
+    goto Done;
+  }
   CopyMem (Timeout->buffer, Buffer, Timeout->size);
+  Buffer += Timeout->size;
 
   PolicyTicket->tag = SwapBytes16(ReadUnaligned16 ((UINT16 *)Buffer));
   Buffer += sizeof(UINT16);
@@ -199,6 +212,11 @@ Tpm2PolicySecret (
     goto Done;
   }
 
+  if ((UINTN)Buffer + PolicyTicket->digest.size > (UINTN)RecvBufferEnd) {
+    DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - malformed digest buffer\n"));
+    Status = EFI_DEVICE_ERROR;
+    goto Done;
+  }
   CopyMem (PolicyTicket->digest.buffer, Buffer, PolicyTicket->digest.size);
 
 Done:
