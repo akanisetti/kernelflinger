@@ -222,10 +222,15 @@ static EFI_STATUS installer_flash_big_chunk_multiple(EFI_FILE **file, UINTN *rea
 	EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	UINTN payload_size, read_size, already_read, ckh_blks, data_size;
 	const UINTN MAX_DATA_SIZE = dl->max_size - offsetof(flash_buffer_t, ckh_data);
-	const UINTN MAX_BLKS = MAX_DATA_SIZE / fb->sph.blk_sz;
+	UINTN MAX_BLKS;
 	const UINTN HEADER_SIZE = offsetof(flash_buffer_t, d);
 	struct chunk_header *ckh;
 	void *read_ptr;
+
+	if (!fb->sph.blk_sz)
+		return EFI_INVALID_PARAMETER;
+
+	MAX_BLKS = MAX_DATA_SIZE / fb->sph.blk_sz;
 
 	ckh = &fb->d.ckh;
 	payload_size = ckh->total_sz - sizeof(*ckh);
@@ -287,10 +292,15 @@ static EFI_STATUS installer_flash_big_chunk(EFI_FILE *file, UINTN *remaining_dat
 	EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	UINTN payload_size, read_size, already_read, ckh_blks, data_size;
 	const UINTN MAX_DATA_SIZE = dl->max_size - offsetof(flash_buffer_t, ckh_data);
-	const UINTN MAX_BLKS = MAX_DATA_SIZE / fb->sph.blk_sz;
+	UINTN MAX_BLKS;
 	const UINTN HEADER_SIZE = offsetof(flash_buffer_t, d);
 	struct chunk_header *ckh;
 	void *read_ptr;
+
+	if (!fb->sph.blk_sz)
+		return EFI_INVALID_PARAMETER;
+
+	MAX_BLKS = MAX_DATA_SIZE / fb->sph.blk_sz;
 
 	ckh = &fb->d.ckh;
 	payload_size = ckh->total_sz - sizeof(*ckh);
