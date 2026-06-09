@@ -427,7 +427,10 @@ EFI_STATUS ivshmem_init(void)
 			return EFI_NOT_FOUND;
 		}
 
-		strcpy_s((CHAR8 *)g_ivshmem_dev.fact->name, GUEST_SHM_MAX_NAME, "tee_shmem");
+		if (EFI_ERROR(strcpy_s((CHAR8 *)g_ivshmem_dev.fact->name, GUEST_SHM_MAX_NAME, "tee_shmem"))) {
+			error(L"IVSHMEM device: failed to set device name");
+			return EFI_DEVICE_ERROR;
+		}
 		guest_shm_create(g_ivshmem_dev.fact, QNX_TEE_SHM_SIZE);
 
 		if (g_ivshmem_dev.fact->status != GSS_OK) {
