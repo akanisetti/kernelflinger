@@ -147,7 +147,7 @@ static void ui_textarea_refresh_blt(ui_textarea_t *textarea)
 			UINTN x1;
 			for (x1 = 0; x1 < textarea->height * textarea->width; x1++)
 				CopyMem(textarea->blt + x1, bg_color,
-					sizeof(bg_color));
+					sizeof(*bg_color));
 		}
 
 		unsigned char *s = (unsigned char *)textarea->text[cur].str;
