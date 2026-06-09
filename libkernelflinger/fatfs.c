@@ -248,7 +248,7 @@ UINT32 get_fattime() {
 	ret = uefi_call_wrapper(RT->GetTime, 2, &now, NULL);
 	if (EFI_ERROR(ret)) {
 		efi_perror(ret, L"Failed to get the current time");
-		return 42<<25|1<<21|1<<16;
+		return (UINT32)42<<25|(UINT32)1<<21|(UINT32)1<<16;
 	}
 	return ((UINT32)now.Year-1980)<<25 | (UINT32)(now.Month)<<21 \
 		| (UINT32)(now.Day)<<16 |(UINT32)(now.Hour)<<11 \
