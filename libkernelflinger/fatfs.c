@@ -250,7 +250,9 @@ UINT32 get_fattime() {
 		efi_perror(ret, L"Failed to get the current time");
 		return (UINT32)42<<25|(UINT32)1<<21|(UINT32)1<<16;
 	}
-	return ((UINT32)now.Year-1980)<<25 | (UINT32)(now.Month)<<21 \
+	if (now.Year < 1980)
+		return (UINT32)42<<25|(UINT32)1<<21|(UINT32)1<<16;
+	return ((UINT32)(now.Year - 1980U))<<25 | (UINT32)(now.Month)<<21 \
 		| (UINT32)(now.Day)<<16 |(UINT32)(now.Hour)<<11 \
 		| (UINT32)(now.Minute) << 5 | now.Second;
 }

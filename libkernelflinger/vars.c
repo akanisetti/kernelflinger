@@ -508,17 +508,17 @@ exit:
 
 const char *get_current_state_string()
 {
-	int index = get_current_state() + 1;
-	if (index < 0 || index >= (int)(sizeof(STATE_DISPLAY) / sizeof(STATE_DISPLAY[0])))
-		index = 0;
+	const int state = (int)get_current_state();
+	const int max = (int)(sizeof(STATE_DISPLAY) / sizeof(STATE_DISPLAY[0])) - 1;
+	const int index = (state >= -1 && state <= max - 1) ? state + 1 : 0;
 	return STATE_DISPLAY[index].string;
 }
 
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL *get_current_state_color()
 {
-	int index = get_current_state() + 1;
-	if (index < 0 || index >= (int)(sizeof(STATE_DISPLAY) / sizeof(STATE_DISPLAY[0])))
-		index = 0;
+	const int state = (int)get_current_state();
+	const int max = (int)(sizeof(STATE_DISPLAY) / sizeof(STATE_DISPLAY[0])) - 1;
+	const int index = (state >= -1 && state <= max - 1) ? state + 1 : 0;
 	return STATE_DISPLAY[index].color;
 }
 

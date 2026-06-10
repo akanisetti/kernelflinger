@@ -763,12 +763,16 @@ Tpm2PolicyPCR (
   WriteUnaligned32 ((UINT32 *)Buffer, SwapBytes32(Pcrs->count));
   Buffer += sizeof(UINT32);
   for (Index = 0; Index < Pcrs->count; Index++) {
-    if ((UINTN)Buffer + sizeof(UINT16) + sizeof(UINT8) > (UINTN)SendBufferEnd) {
-      DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - command buffer too small for pcr selection header\n"));
+    if ((UINTN)Buffer + sizeof(UINT16) > (UINTN)SendBufferEnd) {
+      DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - command buffer too small for pcr hash\n"));
       return EFI_INVALID_PARAMETER;
     }
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16(Pcrs->pcrSelections[Index].hash));
     Buffer += sizeof(UINT16);
+    if ((UINTN)Buffer + sizeof(UINT8) > (UINTN)SendBufferEnd) {
+      DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - command buffer too small for sizeofSelect\n"));
+      return EFI_INVALID_PARAMETER;
+    }
     *(UINT8 *)Buffer = Pcrs->pcrSelections[Index].sizeofSelect;
     Buffer++;
     if(Pcrs->pcrSelections[Index].sizeofSelect > PCR_SELECT_MAX) {
