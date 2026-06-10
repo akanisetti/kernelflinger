@@ -374,6 +374,11 @@ AvbSlotVerifyResult avb_append_options(
         avb_assert_not_reached();
         break;
     }
+    if (slot_data->cmdline == NULL) {
+      ret = AVB_SLOT_VERIFY_RESULT_ERROR_OOM;
+      goto out;
+    }
+
     new_ret = avb_replace(
         slot_data->cmdline, "$(ANDROID_VERITY_MODE)", dm_verity_mode);
     avb_free(slot_data->cmdline);
