@@ -192,7 +192,8 @@ Tpm2PolicySecret (
   }
 
   Buffer += sizeof(UINT16);
-  if ((UINTN)Buffer + Timeout->size > (UINTN)RecvBufferEnd) {
+  if ((UINTN)Buffer > (UINTN)RecvBufferEnd ||
+      (UINTN)(RecvBufferEnd - Buffer) < Timeout->size) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - malformed response (timeout data)\n"));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -200,7 +201,8 @@ Tpm2PolicySecret (
   CopyMem (Timeout->buffer, Buffer, Timeout->size);
   Buffer += Timeout->size;
 
-  if ((UINTN)Buffer + sizeof(UINT16) > (UINTN)RecvBufferEnd) {
+  if ((UINTN)Buffer > (UINTN)RecvBufferEnd ||
+      (UINTN)(RecvBufferEnd - Buffer) < sizeof(UINT16)) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - malformed response (ticket tag)\n"));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -208,7 +210,8 @@ Tpm2PolicySecret (
   PolicyTicket->tag = SwapBytes16(ReadUnaligned16 ((UINT16 *)Buffer));
   Buffer += sizeof(UINT16);
 
-  if ((UINTN)Buffer + sizeof(UINT32) > (UINTN)RecvBufferEnd) {
+  if ((UINTN)Buffer > (UINTN)RecvBufferEnd ||
+      (UINTN)(RecvBufferEnd - Buffer) < sizeof(UINT32)) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - malformed response (ticket hierarchy)\n"));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -216,7 +219,8 @@ Tpm2PolicySecret (
   PolicyTicket->hierarchy = SwapBytes32(ReadUnaligned32 ((UINT32 *)Buffer));
   Buffer += sizeof(UINT32);
 
-  if ((UINTN)Buffer + sizeof(UINT16) > (UINTN)RecvBufferEnd) {
+  if ((UINTN)Buffer > (UINTN)RecvBufferEnd ||
+      (UINTN)(RecvBufferEnd - Buffer) < sizeof(UINT16)) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - malformed response (digest size)\n"));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -229,7 +233,8 @@ Tpm2PolicySecret (
     goto Done;
   }
 
-  if ((UINTN)Buffer + PolicyTicket->digest.size > (UINTN)RecvBufferEnd) {
+  if ((UINTN)Buffer > (UINTN)RecvBufferEnd ||
+      (UINTN)(RecvBufferEnd - Buffer) < PolicyTicket->digest.size) {
     DEBUG ((DEBUG_ERROR, "Tpm2PolicySecret - malformed digest buffer\n"));
     Status = EFI_DEVICE_ERROR;
     goto Done;

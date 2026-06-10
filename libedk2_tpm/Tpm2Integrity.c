@@ -743,7 +743,8 @@ Tpm2PolicyPCR (
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - PcrDigest buffer overflow\n"));
     return EFI_INVALID_PARAMETER;
   }
-  if ((UINTN)Buffer + sizeof(UINT16) + PcrDigest->size > (UINTN)SendBufferEnd) {
+  if ((UINTN)Buffer > (UINTN)SendBufferEnd ||
+      (UINTN)(SendBufferEnd - Buffer) < sizeof(UINT16) + PcrDigest->size) {
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - command buffer too small for PcrDigest\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -756,30 +757,34 @@ Tpm2PolicyPCR (
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - pcrSelections buffer overflow\n"));
     return EFI_INVALID_PARAMETER;
   }
-  if ((UINTN)Buffer + sizeof(UINT32) > (UINTN)SendBufferEnd) {
+  if ((UINTN)Buffer > (UINTN)SendBufferEnd ||
+      (UINTN)(SendBufferEnd - Buffer) < sizeof(UINT32)) {
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - command buffer too small for pcr count\n"));
     return EFI_INVALID_PARAMETER;
   }
   WriteUnaligned32 ((UINT32 *)Buffer, SwapBytes32(Pcrs->count));
   Buffer += sizeof(UINT32);
   for (Index = 0; Index < Pcrs->count; Index++) {
-    if ((UINTN)Buffer + sizeof(UINT16) > (UINTN)SendBufferEnd) {
+    if ((UINTN)Buffer > (UINTN)SendBufferEnd ||
+        (UINTN)(SendBufferEnd - Buffer) < sizeof(UINT16)) {
       DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - command buffer too small for pcr hash\n"));
       return EFI_INVALID_PARAMETER;
     }
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16(Pcrs->pcrSelections[Index].hash));
     Buffer += sizeof(UINT16);
-    if ((UINTN)Buffer + sizeof(UINT8) > (UINTN)SendBufferEnd) {
+    if ((UINTN)Buffer > (UINTN)SendBufferEnd ||
+        (UINTN)(SendBufferEnd - Buffer) < sizeof(UINT8)) {
       DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - command buffer too small for sizeofSelect\n"));
       return EFI_INVALID_PARAMETER;
     }
-    *(UINT8 *)Buffer = Pcrs->pcrSelections[Index].sizeofSelect;
+    CopyMem (Buffer, &Pcrs->pcrSelections[Index].sizeofSelect, sizeof(UINT8));
     Buffer++;
     if(Pcrs->pcrSelections[Index].sizeofSelect > PCR_SELECT_MAX) {
       DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - pcrSelect buffer overflow\n"));
       return EFI_INVALID_PARAMETER;
     }
-    if ((UINTN)Buffer + Pcrs->pcrSelections[Index].sizeofSelect > (UINTN)SendBufferEnd) {
+    if ((UINTN)Buffer > (UINTN)SendBufferEnd ||
+        (UINTN)(SendBufferEnd - Buffer) < Pcrs->pcrSelections[Index].sizeofSelect) {
       DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - command buffer too small for pcrSelect\n"));
       return EFI_INVALID_PARAMETER;
     }
