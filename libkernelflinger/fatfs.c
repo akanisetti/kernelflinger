@@ -244,13 +244,19 @@ EFI_STATUS fat_test()
 UINT32 get_fattime() {
 	EFI_STATUS ret;
 	EFI_TIME now = {0};
+	UINT32 year;
 
 	ret = uefi_call_wrapper(RT->GetTime, 2, &now, NULL);
 	if (EFI_ERROR(ret)) {
 		efi_perror(ret, L"Failed to get the current time");
-		return 42<<25|1<<21|1<<16;
+		return (42U << 25) | (1U << 21) | (1U << 16);
 	}
-	return ((UINT32)now.Year-1980)<<25 | (UINT32)(now.Month)<<21 \
-		| (UINT32)(now.Day)<<16 |(UINT32)(now.Hour)<<11 \
-		| (UINT32)(now.Minute) << 5 | now.Second;
+
+	year = (now.Year >= 1980U) ? ((UINT32)now.Year - 1980U) : 0U;
+	if (year > 127U)
+		year = 127U;
+
+	return (year << 25) | ((UINT32)now.Month << 21) \
+		| ((UINT32)now.Day << 16) | ((UINT32)now.Hour << 11) \
+		| ((UINT32)now.Minute << 5) | (UINT32)now.Second;
 }
